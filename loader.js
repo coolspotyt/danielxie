@@ -36,7 +36,7 @@ window.addEventListener('pageshow', event => {
 });
 
 // Show the animation for 2.5 seconds.
-deadline = window.setTimeout(() => finish(), 2500);
+deadline = window.setTimeout(() => finish(), 5000);
 })();
   document.addEventListener('keydown', onKey);
   window.addEventListener('pageshow', () => finish(true), { once: true });
