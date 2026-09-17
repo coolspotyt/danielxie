@@ -36,5 +36,5 @@
   });
 
   // Show the animation for three seconds unless the visitor skips it.
-  deadline = window.setTimeout(() => finish(), 2700);
+  deadline = window.setTimeout(() => finish(), 2500);
 })();
