@@ -26,7 +26,7 @@ html.has-preloader .headline-line>span,html.has-preloader .profile-note{animatio
   try {
     if (window.matchMedia('(prefers-reduced-motion: reduce)').matches || localStorage.getItem('daniel-motion') === 'off') return;
     document.documentElement.classList.add('has-preloader');
-    window.setTimeout(() => document.documentElement.classList.remove('has-preloader'), 2200);
+    window.setTimeout(() => document.documentElement.classList.remove('has-preloader'), 5000);
   } catch {}
 })();
 </script>
