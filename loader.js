@@ -27,7 +27,17 @@
     if (event.key === 'Escape' || event.key === 'Tab') finish(true);
   }
 
-  skip.addEventListener('click', () => finish());
+  skip.addEventListener('click', () => finish(true));
+document.addEventListener('keydown', onKey);
+
+// Skip the intro when returning with the browser's Back button.
+window.addEventListener('pageshow', event => {
+  if (event.persisted) finish(true);
+});
+
+// Show the animation for 2.5 seconds.
+deadline = window.setTimeout(() => finish(), 2500);
+})();
   document.addEventListener('keydown', onKey);
   window.addEventListener('pageshow', () => finish(true), { once: true });
   deadline = window.setTimeout(() => finish(), 1600);
