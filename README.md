@@ -19,6 +19,10 @@ The asset links are relative, so the site can run at a domain root or within a p
 - `favicon.svg`: film-reel browser icon.
 - `licenses/`: included third-party license notices.
 
+## Schedule page
+
+`availability.html` is the passcode-gated schedule. GitHub Pages can't run server code, so `worker/` holds a small Cloudflare Worker that checks the passcode and reads the calendar. In Cloudflare, set the secret `CALENDAR_ICS_URL` to a published Outlook calendar ("Can view when I'm busy"). `SCHEDULE_PASSCODE` optionally replaces the built-in passcode. Only busy times between 9 AM and 9 PM ET ever leave the Worker.
+
 ## Edit and preview
 
 Edit the HTML, CSS, and JavaScript files directly. For a local preview, run `python3 -m http.server 8000` from this folder and open `http://localhost:8000`.

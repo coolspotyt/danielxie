@@ -1,0 +1,278 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
+<meta name="theme-color" content="#12110f">
+<meta name="robots" content="noindex">
+<title>Daniel Xie's Schedule</title>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Bangers&family=Chakra+Petch:wght@500;600;700&family=Newsreader:opsz,wght@6..72,400&family=Hanken+Grotesk:wght@400;500;600&family=Share+Tech+Mono&display=swap">
+<style>
+/* Two rooms: the portfolio's quiet black and cream at the door, then a reactor iris opens into the comic HUD from Type.Xie Studio. */
+:root {
+  color-scheme: dark;
+  --door: #12110f;
+  --door-cream: #f3ecdd;
+  --door-soft: #b3aa99;
+  --door-line: #3a362f;
+  --door-gold: #c9a24d;
+  --ground: #071226;
+  --ink: #05070f;
+  --paper: #fff6df;
+  --paper-ink: #17141c;
+  --paper-soft: #4c4650;
+  --hud: #dff8ff;
+  --hud-soft: #93c6d8;
+  --arc: #5fe6ff;
+  --red: #c8141f;
+  --gold: #ffc42e;
+  --gold-deep: #e88a0c;
+  --alert: #ff6a5c;
+  --font-door: "Newsreader", Georgia, serif;
+  --font-door-body: "Hanken Grotesk", "Helvetica Neue", Arial, sans-serif;
+  --font-display: "Bangers", Impact, "Arial Narrow", sans-serif;
+  --font-body: "Chakra Petch", "Trebuchet MS", Arial, sans-serif;
+  --font-data: "Share Tech Mono", ui-monospace, Menlo, monospace;
+  --cut: polygon(16px 0, 100% 0, 100% calc(100% - 16px), calc(100% - 16px) 100%, 0 100%, 0 16px);
+}
+* { box-sizing: border-box; }
+html, body { height: 100%; }
+body { margin: 0; background: var(--door); color: var(--door-cream); font: 400 16px/1.5 var(--font-door-body); }
+[hidden] { display: none !important; }
+:focus-visible { outline: 3px solid var(--arc); outline-offset: 2px; }
+
+.door {
+  min-height: 100%; display: flex; flex-direction: column; justify-content: center; align-items: center; text-align: center; gap: 1.3rem;
+  padding-block: 2rem;
+  padding-left: max(16px, env(safe-area-inset-left, 0px)); padding-right: max(16px, env(safe-area-inset-right, 0px));
+}
+.door h1 { margin: 0; font: 400 clamp(2.2rem, 7vw, 3.4rem)/1.05 var(--font-door); text-wrap: balance; }
+.door > p { margin: 0; color: var(--door-soft); max-width: 44ch; }
+.door a { color: var(--door-soft); font-size: .9rem; text-underline-offset: 3px; }
+.see, .enter {
+  font: inherit; font-weight: 600; color: var(--door); background: var(--door-gold); border: 0; border-radius: 6px; padding: .7rem 1.2rem; cursor: pointer;
+}
+.see:hover, .enter:hover { background: #d8b566; }
+form { display: flex; flex-wrap: wrap; justify-content: center; gap: .5rem; width: 100%; max-width: 24rem; }
+label { width: 100%; font-size: .92rem; color: var(--door-soft); }
+input {
+  flex: 1 1 11rem; min-width: 0; font: inherit; font-size: 16px; color: var(--door-cream); background: #1c1a17;
+  border: 1px solid var(--door-line); border-radius: 6px; padding: .65rem .8rem;
+}
+.err { width: 100%; min-height: 1.5em; margin: 0; font-size: .9rem; color: #ef9a86; }
+.shake { animation: shake .32s; }
+@keyframes shake { 25% { transform: translateX(-7px); } 75% { transform: translateX(7px); } }
+
+.hud {
+  position: fixed; inset: 0; z-index: 5; overflow-y: auto; color: var(--hud); font: 500 16px/1.35 var(--font-body);
+  background:
+    radial-gradient(#5fe6ff14 1.3px, transparent 1.6px) 0 0 / 11px 11px,
+    linear-gradient(#5fe6ff0d 1px, transparent 1px) 0 0 / 100% 44px,
+    linear-gradient(90deg, #5fe6ff0d 1px, transparent 1px) 0 0 / 44px 100%,
+    radial-gradient(70% 80% at 10% 0%, #123f7a, transparent 70%),
+    var(--ground);
+  padding-block: calc(1rem + env(safe-area-inset-top, 0px)) calc(1.5rem + env(safe-area-inset-bottom, 0px));
+  padding-left: max(16px, env(safe-area-inset-left, 0px)); padding-right: max(22px, env(safe-area-inset-right, 0px));
+}
+.hud.opening { animation: iris .9s cubic-bezier(.7, 0, .2, 1) both; }
+@keyframes iris { from { clip-path: circle(0 at 50% 50%); } to { clip-path: circle(150vmax at 50% 50%); } }
+.inner { max-width: 980px; margin: 0 auto; display: grid; gap: 1rem; }
+.top { display: flex; justify-content: space-between; align-items: center; gap: .6rem; flex-wrap: wrap; }
+.mark { font-family: var(--font-display); font-size: 1.5em; letter-spacing: .06em; color: var(--gold); text-shadow: 2px 2px 0 var(--ink); }
+.clock { font-family: var(--font-data); color: var(--arc); }
+.hello { display: flex; flex-wrap: wrap; align-items: center; gap: .7rem 1.2rem; }
+.reactor { width: clamp(4.4rem, 11vw, 6.2rem); height: auto; flex: none; filter: drop-shadow(0 0 14px #5fe6ffa6); overflow: visible; }
+.reactor text { font-family: var(--font-display); font-size: 30px; fill: var(--ink); text-anchor: middle; }
+.spin { transform-origin: 60px 60px; animation: turn 14s linear infinite; }
+.spin.back { animation: turn 22s linear infinite reverse; }
+@keyframes turn { to { transform: rotate(360deg); } }
+.hud h1 {
+  margin: 0; font-family: var(--font-display); font-weight: 400; letter-spacing: .035em; line-height: 1;
+  font-size: clamp(2.3rem, 7vw, 4rem); color: var(--paper); text-shadow: 3px 3px 0 var(--red), 6px 6px 0 var(--ink);
+}
+.bubble {
+  position: relative; margin: 0 0 0 .8rem; flex: 1 1 15rem; min-width: 0; padding: .5rem .85rem; background: var(--paper); color: var(--paper-ink); font-weight: 600;
+  border: 3px solid var(--ink); border-radius: 18px; box-shadow: 4px 4px 0 var(--ink);
+}
+.bubble::before {
+  content: ""; position: absolute; left: -13px; top: 50%; width: 18px; height: 18px; margin-top: -9px; background: var(--paper);
+  border-left: 3px solid var(--ink); border-bottom: 3px solid var(--ink); transform: rotate(45deg) skew(10deg, 10deg);
+}
+.panel { position: relative; isolation: isolate; padding: 1rem; filter: drop-shadow(5px 5px 0 var(--ink)); display: grid; gap: .8rem; }
+.panel::before, .panel::after { content: ""; position: absolute; z-index: -1; clip-path: var(--cut); }
+.panel::before { inset: 0; background: var(--ink); }
+.panel::after { inset: 3px; background: radial-gradient(#0000002e 1.3px, transparent 1.6px) 0 0 / 9px 9px, linear-gradient(160deg, var(--gold), var(--gold-deep)); }
+.days { display: flex; gap: .45rem; overflow-x: auto; padding: 2px 5px 6px 2px; }
+.days button {
+  flex: 0 0 auto; min-width: 4.3rem; padding: .3rem .5rem; font: inherit; font-size: .84rem; line-height: 1.2; color: var(--paper-ink); cursor: pointer;
+  background: var(--paper); border: 3px solid var(--ink); border-radius: 4px; box-shadow: 3px 3px 0 var(--ink);
+}
+.days button b { display: block; font-family: var(--font-display); font-weight: 400; letter-spacing: .04em; font-size: 1.2rem; }
+.days button[aria-pressed="true"] { background: var(--red); color: #fff; }
+.slots { display: grid; grid-template-columns: repeat(auto-fill, minmax(6.6rem, 1fr)); gap: .5rem; padding-right: 4px; }
+.slot {
+  padding: .45rem .2rem; text-align: center; font: 700 .95rem var(--font-body); font-variant-numeric: tabular-nums;
+  border: 3px solid var(--ink); border-radius: 4px;
+}
+button.slot { cursor: pointer; color: var(--paper-ink); background: #fff; box-shadow: 3px 3px 0 var(--ink); }
+button.slot:hover { background: var(--paper); transform: translate(-1px, -1px); }
+button.slot[aria-pressed="true"] { background: var(--red); color: #fff; }
+.slot.busy { color: #5b4312; background: repeating-linear-gradient(45deg, #0000001f 0 5px, transparent 5px 10px); border-style: dashed; border-color: #5b4312; font-family: var(--font-display); letter-spacing: .05em; font-weight: 400; }
+.note { margin: 0; color: var(--paper-ink); font-size: .9rem; font-weight: 600; }
+.request { display: grid; gap: .4rem; padding: .7rem .85rem; background: var(--paper); color: var(--paper-ink); border: 3px solid var(--ink); border-radius: 4px; box-shadow: 3px 3px 0 var(--ink); }
+.request h2 { margin: 0; font-family: var(--font-display); font-weight: 400; letter-spacing: .04em; font-size: 1.5rem; line-height: 1.1; }
+.request p { margin: 0; color: var(--paper-soft); font-size: .92rem; }
+.cta { justify-self: start; padding: .3rem .75rem; font-weight: 700; color: #fff; background: var(--red); border: 3px solid var(--ink); box-shadow: 3px 3px 0 var(--ink); text-decoration: none; }
+.foot { display: flex; flex-wrap: wrap; justify-content: space-between; gap: .4rem 1rem; font-family: var(--font-data); font-size: .84rem; color: var(--hud-soft); }
+.foot a { color: var(--arc); }
+@media (max-width: 460px) {
+  .bubble { margin-left: 0; flex-basis: 100%; }
+  .bubble::before { left: 26px; top: -13px; margin-top: 0; transform: rotate(135deg) skew(10deg, 10deg); }
+}
+@media (prefers-reduced-motion: reduce) {
+  .hud.opening, .spin, .spin.back, .shake { animation: none; }
+}
+</style>
+</head>
+<body>
+<main class="door" id="door">
+  <h1>Want to meet?</h1>
+  <p>See when I'm free today and request a time.</p>
+  <button class="see" id="see" type="button">See Daniel's schedule for today</button>
+  <form id="gate" hidden>
+    <label for="code">Enter the passcode</label>
+    <input id="code" type="password" autocomplete="off" autocapitalize="none" spellcheck="false">
+    <button class="enter" type="submit">Enter</button>
+    <p class="err" id="err" role="alert"></p>
+  </form>
+  <a href="/">Back to danielxie.com</a>
+  <a href="https://claude.ai/artifact/73tgC5rcgY6QGii8PTCCoF" rel="noopener" target="_blank">Studio login</a>
+</main>
+
+<section class="hud" id="hud" hidden>
+  <div class="inner">
+    <div class="top"><span class="mark">Type.Xie Studio</span><span class="clock" id="clock"></span></div>
+    <div class="hello">
+      <svg class="reactor" viewBox="0 0 120 120" role="img" aria-label="Arc reactor showing how many times are open">
+        <circle cx="60" cy="60" r="56" fill="#0b2346" stroke="#05070f" stroke-width="5"/>
+        <circle class="spin" cx="60" cy="60" r="47" fill="none" stroke="#5fe6ff" stroke-width="9" stroke-dasharray="19 5.6"/>
+        <circle class="spin back" cx="60" cy="60" r="35" fill="none" stroke="#ffc42e" stroke-width="3" stroke-dasharray="4 7"/>
+        <circle cx="60" cy="60" r="27" fill="#dff8ff" stroke="#05070f" stroke-width="4"/>
+        <text x="60" y="71" id="count">0</text>
+      </svg>
+      <h1 id="hud-title" tabindex="-1">Daniel's Schedule</h1>
+      <p class="bubble" id="bubble">Pick an open time and send me a request. I'll confirm by email.</p>
+    </div>
+    <div class="panel" id="app"></div>
+    <div class="foot"><span>All times Eastern. Open times are requests until I confirm.</span><a href="https://claude.ai/artifact/73tgC5rcgY6QGii8PTCCoF" rel="noopener" target="_blank">Studio login</a></div>
+  </div>
+</section>
+
+<script>
+(function () {
+  "use strict";
+  var EMAIL = "daniel@oclobsterpot.com", SLOT = 30;
+  var API = "https://danielxie-schedule.theaventisinn.workers.dev/";
+  var $ = function (id) { return document.getElementById(id); };
+  var app = $("app"), state = { data: null, day: 0, pick: null };
+
+  function el(tag, cls, text) { var n = document.createElement(tag); if (cls) n.className = cls; if (text != null) n.textContent = text; return n; }
+  function t12(min) { var h = Math.floor(min / 60), m = min % 60; return ((h % 12) || 12) + ":" + String(m).padStart(2, "0") + (h < 12 ? " AM" : " PM"); }
+  function label(date, opts) { return new Date(date + "T12:00:00Z").toLocaleDateString("en-US", Object.assign({ timeZone: "UTC" }, opts)); }
+  function nowET() {
+    var p = {};
+    new Intl.DateTimeFormat("en-CA", { timeZone: "America/New_York", hourCycle: "h23", year: "numeric", month: "2-digit", day: "2-digit", hour: "2-digit", minute: "2-digit" })
+      .formatToParts(new Date()).forEach(function (x) { p[x.type] = x.value; });
+    return { date: p.year + "-" + p.month + "-" + p.day, min: +p.hour * 60 + +p.minute };
+  }
+
+  function openHud() {
+    var hud = $("hud");
+    hud.hidden = false;
+    hud.classList.add("opening");
+    var settle = function () { $("door").hidden = true; hud.classList.remove("opening"); $("hud-title").focus({ preventScroll: true }); };
+    if (window.matchMedia("(prefers-reduced-motion: reduce)").matches) settle();
+    else hud.addEventListener("animationend", function done(ev) { if (ev.target !== hud) return; hud.removeEventListener("animationend", done); settle(); });
+    var tick = function () { $("clock").textContent = t12(nowET().min) + " ET"; };
+    tick(); setInterval(tick, 30000);
+  }
+
+  function renderFallback() {
+    $("count").textContent = "0";
+    $("bubble").textContent = "My live schedule isn't showing right now, so email me instead.";
+    app.textContent = "";
+    var box = el("section", "request");
+    box.appendChild(el("h2", null, "Send me a few times"));
+    box.appendChild(el("p", null, "Tell me what works for you and I'll get back to you."));
+    var a = el("a", "cta", "Email Daniel"); a.href = "mailto:" + EMAIL + "?subject=" + encodeURIComponent("Meeting request");
+    box.appendChild(a); app.appendChild(box);
+  }
+
+  function render() {
+    var d = state.data, now = nowET();
+    app.textContent = "";
+    var days = el("div", "days");
+    d.days.forEach(function (day, i) {
+      var b = el("button"); b.type = "button"; b.setAttribute("aria-pressed", String(i === state.day));
+      b.appendChild(el("b", null, day.date === now.date ? "Today" : label(day.date, { weekday: "short" })));
+      b.appendChild(document.createTextNode(label(day.date, { month: "short", day: "numeric" })));
+      b.addEventListener("click", function () { state.day = i; state.pick = null; render(); });
+      days.appendChild(b);
+    });
+    app.appendChild(days);
+
+    var day = d.days[state.day], grid = el("div", "slots"), open = 0;
+    for (var m = d.open; m < d.close; m += SLOT) {
+      if (day.date === now.date && m <= now.min) continue;
+      var end = m + SLOT;
+      var busy = day.busy.some(function (b) { return b.start < end && m < b.end; });
+      if (busy) { var s = el("div", "slot busy", "Busy"); s.title = t12(m); s.setAttribute("aria-label", t12(m) + ", busy"); grid.appendChild(s); continue; }
+      open++;
+      (function (min) {
+        var b = el("button", "slot", t12(min)); b.type = "button";
+        b.setAttribute("aria-pressed", String(state.pick === min));
+        b.addEventListener("click", function () { state.pick = min; render(); });
+        grid.appendChild(b);
+      })(m);
+    }
+    $("count").textContent = String(open);
+    if (grid.firstChild) app.appendChild(grid);
+    if (!open) app.appendChild(el("p", "note", "No open times left on this day. Try another one."));
+
+    if (state.pick != null) {
+      var when = label(day.date, { weekday: "long", month: "long", day: "numeric" }) + " at " + t12(state.pick) + " ET";
+      var box = el("section", "request");
+      box.appendChild(el("h2", null, when));
+      box.appendChild(el("p", null, "This opens an email to me with the time filled in. Add what you'd like to talk about."));
+      var a = el("a", "cta", "Request this time");
+      a.href = "mailto:" + EMAIL + "?subject=" + encodeURIComponent("Meeting request: " + when) + "&body=" + encodeURIComponent("Hi Daniel,\n\nCould we meet " + when + "?\n\nWhat it's about:\n\nBest way to reach me:\n");
+      box.appendChild(a); app.appendChild(box);
+    }
+  }
+
+  function askCode() { $("see").hidden = true; $("gate").hidden = false; $("code").focus(); }
+  $("see").addEventListener("click", askCode);
+  if (location.hash === "#enter") askCode(); // the homepage button comes straight here
+  $("gate").addEventListener("submit", function (ev) {
+    ev.preventDefault();
+    var form = $("gate"), err = $("err");
+    err.textContent = "";
+    fetch(API, { headers: { "x-passcode": $("code").value } }).then(function (r) {
+      if (r.status === 401) {
+        err.textContent = "That passcode isn't right. Try again.";
+        form.classList.remove("shake"); void form.offsetWidth; form.classList.add("shake");
+        $("code").select();
+        return;
+      }
+      if (!r.ok) { renderFallback(); openHud(); return; }
+      return r.json().then(function (d) {
+        if (!d || !d.days || !d.days.length) renderFallback();
+        else { state.data = d; render(); }
+        openHud();
+      });
+    }).catch(function () { renderFallback(); openHud(); });
+  });
+})();
+</script>
+</body>
+</html>
