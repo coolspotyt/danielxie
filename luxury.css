@@ -376,3 +376,6 @@ body.effects-off .feature-card .feature-image{clip-path:none!important}
 .archive-with-diptych>img{height:auto;aspect-ratio:auto;object-fit:contain;max-height:none}
 @media(max-width:760px){.hospitality-team-story{grid-template-columns:minmax(0,1fr);gap:1.5rem;padding-top:1.5rem}.hospitality-team-photo{justify-self:center}.hospitality-team-copy h4{font-size:2rem}.casa-gallery{grid-template-columns:minmax(0,1fr);max-width:420px;gap:1.25rem;margin-top:1.4rem}.family-now-photo{margin-top:2rem}.family-now-photo .family-now-caption{font-size:1.3rem}.archive-grid.archive-with-diptych{gap:.8rem}.archive-diptych{padding:.4rem}.archive-diptych figcaption{margin-top:.55rem}.archive-diptych figcaption>span{font-size:.8125rem}}
 @media(max-width:380px){.archive-grid.archive-with-diptych{grid-template-columns:minmax(0,1fr)}}
+
+.intro-copy .schedule-link{margin-left:1.6rem}
+@media(max-width:760px){.intro-copy .schedule-link{display:flex;width:fit-content;margin-left:0}}
