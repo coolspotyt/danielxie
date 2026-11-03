@@ -377,11 +377,11 @@ body.effects-off .feature-card .feature-image{clip-path:none!important}
 @media(max-width:760px){.hospitality-team-story{grid-template-columns:minmax(0,1fr);gap:1.5rem;padding-top:1.5rem}.hospitality-team-photo{justify-self:center}.hospitality-team-copy h4{font-size:2rem}.casa-gallery{grid-template-columns:minmax(0,1fr);max-width:420px;gap:1.25rem;margin-top:1.4rem}.family-now-photo{margin-top:2rem}.family-now-photo .family-now-caption{font-size:1.3rem}.archive-grid.archive-with-diptych{gap:.8rem}.archive-diptych{padding:.4rem}.archive-diptych figcaption{margin-top:.55rem}.archive-diptych figcaption>span{font-size:.8125rem}}
 @media(max-width:380px){.archive-grid.archive-with-diptych{grid-template-columns:minmax(0,1fr)}}
 
-.comic-sticker{display:inline-flex;align-items:center;gap:.55rem;margin:1.1rem 0 0 1.6rem;padding:.3rem .85rem .3rem .4rem;vertical-align:middle;background:#ffc42e;color:#17141c;border:3px solid #05070f;border-radius:6px;box-shadow:4px 4px 0 #c8141f;font-family:Bangers,Impact,"Arial Narrow",sans-serif;font-size:1.3rem;letter-spacing:.05em;line-height:1.2;transform:rotate(-1.5deg);transition:transform .16s cubic-bezier(.3,1.6,.5,1),box-shadow .16s}
-.comic-sticker svg{width:2rem;height:2rem;flex:none}
-.comic-sticker:hover{color:#17141c;transform:rotate(1.5deg) translate(-2px,-3px) scale(1.04);box-shadow:7px 8px 0 #c8141f}
-.comic-sticker:active{transform:translate(3px,3px);box-shadow:1px 1px 0 #c8141f}
+.comic-sticker{display:inline-flex;align-items:center;gap:.45rem;margin:1rem 0 0 1.6rem;padding:.2rem .65rem .2rem .35rem;vertical-align:middle;background:#17140f;color:#f3ecdd;border:2px solid #d7bd89;border-radius:4px;box-shadow:3px 3px 0 #8f7440;font-family:Bangers,Impact,"Arial Narrow",sans-serif;font-size:1.05rem;letter-spacing:.06em;line-height:1.25;transform:rotate(-1deg);transition:transform .16s cubic-bezier(.3,1.6,.5,1),box-shadow .16s,color .16s}
+.comic-sticker svg{width:22px;height:22px;flex:none}
+.comic-sticker:hover{color:#ffd968;transform:rotate(1deg) translate(-1px,-2px);box-shadow:5px 5px 0 #8f7440}
+.comic-sticker:active{transform:translate(2px,2px);box-shadow:1px 1px 0 #8f7440}
 .sticker-ring{transform-origin:60px 60px}
 @media(prefers-reduced-motion:no-preference){body:not(.effects-off) .sticker-ring{animation:sticker-spin 12s linear infinite}body:not(.effects-off) .comic-sticker:hover .sticker-ring{animation-duration:2s}}
 @keyframes sticker-spin{to{transform:rotate(360deg)}}
-@media(max-width:760px){.comic-sticker{display:flex;width:fit-content;margin:1.1rem 0 0}}
+@media(max-width:760px){.comic-sticker{display:flex;width:fit-content;margin:1rem 0 0}}
