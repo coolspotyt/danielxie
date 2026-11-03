@@ -392,3 +392,7 @@ body.effects-off .feature-card .feature-image{clip-path:none!important}
 .columbia-education{margin-top:.5rem;padding:2rem 1.5rem;border:1px solid #b9d9eb;border-top:3px solid #6cace4}
 .columbia-education .eyebrow,.columbia-education .columbia-course{color:#1d4f91;transition:color .35s ease}
 .columbia-education:hover,.columbia-education:focus-within{background-color:#b9d9eb40;border-color:#6cace4}
+.xavier-education{align-self:start;padding:1.2rem 1.5rem;border:1px solid #d9b8bb;border-top:3px solid #7a1f2b;box-shadow:inset 3px 0 0 #1f3a6e;transition:background-color .35s ease,border-color .35s ease}
+.xavier-education>.school-heading .eyebrow,.xavier-education .eyebrow{color:#7a1f2b}
+.xavier-education .service-list dt{color:#1f3a6e}
+.xavier-education:hover,.xavier-education:focus-within{background-color:#7a1f2b12;border-color:#7a1f2b}
