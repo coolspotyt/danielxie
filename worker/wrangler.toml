@@ -3,4 +3,4 @@ main = "dist/worker.js"
 compatibility_date = "2026-10-01"
 workers_dev = true
 
-# Set CALENDAR_ICS_URL as a secret in the Cloudflare dashboard. SCHEDULE_PASSCODE is optional.
+# Set CALENDAR_ICS_URL as a secret in the Cloudflare dashboard. SCHEDULE_PASSCODE optionally replaces the Studio passcode.

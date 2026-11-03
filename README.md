@@ -21,7 +21,7 @@ The asset links are relative, so the site can run at a domain root or within a p
 
 ## Schedule page
 
-`availability.html` is the passcode-gated schedule. GitHub Pages can't run server code, so `worker/` holds a small Cloudflare Worker that checks the passcode and reads the calendar. In Cloudflare, set the secret `CALENDAR_ICS_URL` to a published Outlook calendar ("Can view when I'm busy"). `SCHEDULE_PASSCODE` optionally replaces the built-in passcode. Only busy times between 9 AM and 9 PM ET ever leave the Worker.
+`availability.html` is the public schedule and the passcode gate for Studio login. GitHub Pages can't run server code, so `worker/` holds a small Cloudflare Worker that reads the calendar and checks the Studio passcode. In Cloudflare, set the secret `CALENDAR_ICS_URL` to a published Outlook calendar. `SCHEDULE_PASSCODE` optionally replaces the built-in passcode. Visitors only get friendly labels for busy times between 9 AM and 9 PM ET, never calendar titles or locations.
 
 ## Edit and preview
 
