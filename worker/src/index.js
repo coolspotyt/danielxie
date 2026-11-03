@@ -1,6 +1,7 @@
 // Busy-only schedule endpoint. No titles, locations, or attendees ever leave this file.
 import ICAL from "ical.js";
 
+const ALLOWED_ORIGINS = ["https://danielxie.com", "https://www.danielxie.com"];
 const ZONE = "America/New_York";
 const OPEN_MIN = 9 * 60, CLOSE_MIN = 21 * 60, DAYS = 7;
 const DEFAULT_PASSCODE_HASH = "79b9f10f0712ad8032d0bb38925eba0b2ed148bf1e0abb2e8cbdf8b26ae75101";
@@ -78,7 +79,7 @@ async function sha256(value) {
 export default {
   async fetch(request, env) {
     const origin = request.headers.get("origin") || "";
-    const allowed = String(env.ALLOWED_ORIGINS || "").split(",").includes(origin);
+    const allowed = ALLOWED_ORIGINS.includes(origin);
     const headers = { "cache-control": "no-store", "content-type": "application/json", vary: "origin" };
     if (allowed) headers["access-control-allow-origin"] = origin;
     const send = (status, body) => new Response(JSON.stringify(body), { status, headers });

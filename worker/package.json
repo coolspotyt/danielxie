@@ -1,1 +1,0 @@
-{ "name": "danielxie-schedule", "private": true, "dependencies": { "ical.js": "1.5.0" }, "devDependencies": { "wrangler": "4.157.0" } }
