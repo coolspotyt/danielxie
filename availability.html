@@ -119,6 +119,7 @@ button.slot { cursor: pointer; color: var(--paper-ink); background: #fff; box-sh
 button.slot:hover { background: var(--paper); transform: translate(-1px, -1px); }
 button.slot[aria-pressed="true"] { background: var(--red); color: #fff; }
 .slot.busy { color: #5b4312; background: repeating-linear-gradient(45deg, #0000001f 0 5px, transparent 5px 10px); border-style: dashed; border-color: #5b4312; font-family: var(--font-display); letter-spacing: .05em; font-weight: 400; }
+.slot.busy small { display: block; font: 500 .72rem var(--font-data); letter-spacing: 0; }
 .note { margin: 0; color: var(--paper-ink); font-size: .9rem; font-weight: 600; }
 .request { display: grid; gap: .4rem; padding: .7rem .85rem; background: var(--paper); color: var(--paper-ink); border: 3px solid var(--ink); border-radius: 4px; box-shadow: 3px 3px 0 var(--ink); }
 .request h2 { margin: 0; font-family: var(--font-display); font-weight: 400; letter-spacing: .04em; font-size: 1.5rem; line-height: 1.1; }
@@ -137,8 +138,8 @@ button.slot[aria-pressed="true"] { background: var(--red); color: #fff; }
 </head>
 <body>
 <main class="door" id="door">
-  <h1>Want to meet?</h1>
-  <p>See when I'm free today and request a time.</p>
+  <h1 id="door-title">Want to meet?</h1>
+  <p id="door-copy">See when I'm free today and request a time.</p>
   <button class="see" id="see" type="button">See Daniel's schedule for today</button>
   <form id="gate" hidden>
     <label for="code">Enter the passcode</label>
@@ -147,7 +148,7 @@ button.slot[aria-pressed="true"] { background: var(--red); color: #fff; }
     <p class="err" id="err" role="alert"></p>
   </form>
   <a href="/">Back to danielxie.com</a>
-  <a href="https://claude.ai/artifact/73tgC5rcgY6QGii8PTCCoF" rel="noopener" target="_blank">Studio login</a>
+  <a href="#studio" data-studio>Studio login</a>
 </main>
 
 <section class="hud" id="hud" hidden>
@@ -165,7 +166,7 @@ button.slot[aria-pressed="true"] { background: var(--red); color: #fff; }
       <p class="bubble" id="bubble">Pick an open time and send me a request. I'll confirm by email.</p>
     </div>
     <div class="panel" id="app"></div>
-    <div class="foot"><span>All times Eastern. Open times are requests until I confirm.</span><a href="https://claude.ai/artifact/73tgC5rcgY6QGii8PTCCoF" rel="noopener" target="_blank">Studio login</a></div>
+    <div class="foot"><span>All times Eastern. Open times are requests until I confirm.</span><a href="#studio" data-studio>Studio login</a></div>
   </div>
 </section>
 
@@ -226,8 +227,14 @@ button.slot[aria-pressed="true"] { background: var(--red); color: #fff; }
     for (var m = d.open; m < d.close; m += SLOT) {
       if (day.date === now.date && m <= now.min) continue;
       var end = m + SLOT;
-      var busy = day.busy.some(function (b) { return b.start < end && m < b.end; });
-      if (busy) { var s = el("div", "slot busy", "Busy"); s.title = t12(m); s.setAttribute("aria-label", t12(m) + ", busy"); grid.appendChild(s); continue; }
+      var hit = day.busy.filter(function (b) { return b.start < end && m < b.end; })[0];
+      if (hit) {
+        var s = el("div", "slot busy");
+        s.appendChild(el("small", null, t12(m)));
+        s.appendChild(document.createTextNode(hit.label || "Busy"));
+        s.setAttribute("aria-label", t12(m) + ", " + (hit.label || "busy"));
+        grid.appendChild(s); continue;
+      }
       open++;
       (function (min) {
         var b = el("button", "slot", t12(min)); b.type = "button";
@@ -237,7 +244,11 @@ button.slot[aria-pressed="true"] { background: var(--red); color: #fff; }
       })(m);
     }
     $("count").textContent = String(open);
-    if (grid.firstChild) app.appendChild(grid);
+    var after = el("div", "slot busy");
+    after.appendChild(el("small", null, "After 9 PM"));
+    after.appendChild(document.createTextNode("Asleep, allegedly"));
+    grid.appendChild(after);
+    app.appendChild(grid);
     if (!open) app.appendChild(el("p", "note", "No open times left on this day. Try another one."));
 
     if (state.pick != null) {
@@ -251,28 +262,41 @@ button.slot[aria-pressed="true"] { background: var(--red); color: #fff; }
     }
   }
 
-  function askCode() { $("see").hidden = true; $("gate").hidden = false; $("code").focus(); }
-  $("see").addEventListener("click", askCode);
-  if (location.hash === "#enter") askCode(); // the homepage button comes straight here
+  function loadSchedule() {
+    $("see").disabled = true;
+    fetch(API).then(function (r) { if (!r.ok) throw 0; return r.json(); }).then(function (d) {
+      if (!d || !d.days || !d.days.length) throw 0;
+      state.data = d; render(); openHud();
+    }).catch(function () { renderFallback(); openHud(); }).finally(function () { $("see").disabled = false; });
+  }
+  function askStudio() {
+    $("hud").hidden = true; $("door").hidden = false;
+    $("door-title").textContent = "Studio login";
+    $("door-copy").textContent = "This part's just for me.";
+    $("see").hidden = true; $("gate").hidden = false; $("code").value = ""; $("err").textContent = ""; $("code").focus();
+  }
+  $("see").addEventListener("click", loadSchedule);
+  document.addEventListener("click", function (ev) {
+    var link = ev.target.closest && ev.target.closest("[data-studio]");
+    if (link) { ev.preventDefault(); askStudio(); }
+  });
   $("gate").addEventListener("submit", function (ev) {
     ev.preventDefault();
     var form = $("gate"), err = $("err");
     err.textContent = "";
-    fetch(API, { headers: { "x-passcode": $("code").value } }).then(function (r) {
+    fetch(API + "studio", { headers: { "x-passcode": $("code").value } }).then(function (r) {
       if (r.status === 401) {
         err.textContent = "That passcode isn't right. Try again.";
         form.classList.remove("shake"); void form.offsetWidth; form.classList.add("shake");
         $("code").select();
         return;
       }
-      if (!r.ok) { renderFallback(); openHud(); return; }
-      return r.json().then(function (d) {
-        if (!d || !d.days || !d.days.length) renderFallback();
-        else { state.data = d; render(); }
-        openHud();
-      });
-    }).catch(function () { renderFallback(); openHud(); });
+      if (!r.ok) throw 0;
+      return r.json().then(function (d) { window.location.href = d.url; });
+    }).catch(function () { err.textContent = "The login isn't answering right now. Try again in a minute."; });
   });
+  if (location.hash === "#studio") askStudio();
+  else if (location.hash === "#schedule") loadSchedule();
 })();
 </script>
 </body>

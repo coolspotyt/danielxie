@@ -4,6 +4,7 @@ import ICAL from "ical.js";
 const ALLOWED_ORIGINS = ["https://danielxie.com", "https://www.danielxie.com"];
 const ZONE = "America/New_York";
 const OPEN_MIN = 9 * 60, CLOSE_MIN = 21 * 60, DAYS = 7;
+const STUDIO_URL = "https://claude.ai/artifact/73tgC5rcgY6QGii8PTCCoF";
 const DEFAULT_PASSCODE_HASH = "79b9f10f0712ad8032d0bb38925eba0b2ed148bf1e0abb2e8cbdf8b26ae75101";
 
 const fmt = new Intl.DateTimeFormat("en-CA", { timeZone: ZONE, hourCycle: "h23", year: "numeric", month: "2-digit", day: "2-digit", hour: "2-digit", minute: "2-digit" });
@@ -13,6 +14,20 @@ function wall(ms) {
 }
 function addDays(date, n) {
   const d = new Date(date + "T12:00:00Z"); d.setUTCDate(d.getUTCDate() + n); return d.toISOString().slice(0, 10);
+}
+// Calendar titles stop here. Visitors only ever see one of these friendly labels.
+const LABELS = [
+  [/^(COM|CHNS|ASAM|FLM)\b|\b(class|lecture|lec|lab|exam|quiz)\b/i, "In class"],
+  [/\bCASA\b|\bSASE\b/i, "CASA stuff"],
+  [/\b(lunch|dinner|breakfast|brunch|food|eat|eating)\b/i, "Eating"],
+  [/\b(sleep|nap)\b/i, "Sleeping"],
+  [/\b(gym|workout|lift)\b/i, "At the gym"],
+  [/chamberstone|lazy dog|chubby taco|biang|bryant park|lobster pot|seapark|munchy|influencer|toast/i, "Running the shop"],
+];
+function labelFor(comp) {
+  const title = String(comp.getFirstPropertyValue("summary") || "");
+  const hit = LABELS.find(([re]) => re.test(title));
+  return hit ? hit[1] : "Busy";
 }
 function isFree(comp) {
   const transp = String(comp.getFirstPropertyValue("transp") || "").toUpperCase();
@@ -35,7 +50,7 @@ export function busyFromIcs(text, nowMs) {
   const add = (s, e, comp) => {
     if (s.isDate || isFree(comp)) return; // all-day and "free" entries don't block meetings
     const a = s.toJSDate().getTime(), b = e.toJSDate().getTime();
-    if (b > startMs && a < stopMs) blocks.push([a, b]);
+    if (b > startMs && a < stopMs) blocks.push([a, b, labelFor(comp)]);
   };
   vevents.filter((c) => !c.hasProperty("recurrence-id")).forEach((comp) => {
     const ev = new ICAL.Event(comp);
@@ -50,23 +65,23 @@ export function busyFromIcs(text, nowMs) {
   });
   const days = {};
   for (let i = 0; i < DAYS; i++) days[addDays(start, i)] = [];
-  blocks.forEach(([a, b]) => {
+  blocks.forEach(([a, b, label]) => {
     const wa = wall(a), wb = wall(b);
     Object.keys(days).forEach((date) => {
       const from = wa.date < date ? 0 : wa.date === date ? wa.min : null;
       const to = wb.date > date ? 1440 : wb.date === date ? wb.min : null;
       if (from === null || to === null) return;
       const s = Math.max(from, OPEN_MIN), e = Math.min(to, CLOSE_MIN);
-      if (e > s) days[date].push([s, e]);
+      if (e > s) days[date].push([s, e, label]);
     });
   });
   return Object.keys(days).map((date) => {
     const merged = [];
-    days[date].sort((x, y) => x[0] - y[0]).forEach(([s, e]) => {
+    days[date].sort((x, y) => x[0] - y[0]).forEach(([s, e, label]) => {
       const last = merged[merged.length - 1];
-      if (last && s <= last[1]) last[1] = Math.max(last[1], e); else merged.push([s, e]);
+      if (last && s <= last[1] && label === last[2]) last[1] = Math.max(last[1], e); else merged.push([s, e, label]);
     });
-    return { date, busy: merged.map(([s, e]) => ({ start: s, end: e })) };
+    return { date, busy: merged.map(([s, e, label]) => ({ start: s, end: e, label })) };
   });
 }
 
@@ -89,8 +104,11 @@ export default {
     }
     if (request.method !== "GET") return send(405, { error: "method_not_allowed" });
 
-    const expected = env.SCHEDULE_PASSCODE ? await sha256(env.SCHEDULE_PASSCODE) : DEFAULT_PASSCODE_HASH;
-    if ((await sha256(request.headers.get("x-passcode") || "")) !== expected) return send(401, { error: "wrong_passcode" });
+    if (new URL(request.url).pathname === "/studio") {
+      const expected = env.SCHEDULE_PASSCODE ? await sha256(env.SCHEDULE_PASSCODE) : DEFAULT_PASSCODE_HASH;
+      if ((await sha256(request.headers.get("x-passcode") || "")) !== expected) return send(401, { error: "wrong_passcode" });
+      return send(200, { url: STUDIO_URL });
+    }
     if (!env.CALENDAR_ICS_URL) return send(503, { error: "not_configured" });
 
     try {
