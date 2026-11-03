@@ -172,6 +172,7 @@ button.slot[aria-pressed="true"] { background: var(--red); color: #fff; }
 (function () {
   "use strict";
   var EMAIL = "daniel@oclobsterpot.com", SLOT = 30;
+  var API = "https://danielxie-schedule.theaventisinn.workers.dev/";
   var $ = function (id) { return document.getElementById(id); };
   var app = $("app"), state = { data: null, day: 0, pick: null };
 
@@ -256,7 +257,7 @@ button.slot[aria-pressed="true"] { background: var(--red); color: #fff; }
     ev.preventDefault();
     var form = $("gate"), err = $("err");
     err.textContent = "";
-    fetch("/api/availability", { headers: { "x-passcode": $("code").value } }).then(function (r) {
+    fetch(API, { headers: { "x-passcode": $("code").value } }).then(function (r) {
       if (r.status === 401) {
         err.textContent = "That passcode isn't right. Try again.";
         form.classList.remove("shake"); void form.offsetWidth; form.classList.add("shake");
