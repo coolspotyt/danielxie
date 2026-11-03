@@ -1,0 +1,8 @@
+name = "danielxie-schedule"
+main = "src/index.js"
+compatibility_date = "2026-10-01"
+workers_dev = true
+
+# Set CALENDAR_ICS_URL as a secret in the Cloudflare dashboard. SCHEDULE_PASSCODE is optional.
+[vars]
+ALLOWED_ORIGINS = "https://danielxie.com,https://www.danielxie.com"
