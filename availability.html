@@ -86,6 +86,7 @@ input {
 .spin { transform-origin: 60px 60px; animation: turn 14s linear infinite; }
 .spin.back { animation: turn 22s linear infinite reverse; }
 @keyframes turn { to { transform: rotate(360deg); } }
+.hud h1:focus { outline: none; }
 .hud h1 {
   margin: 0; font-family: var(--font-display); font-weight: 400; letter-spacing: .035em; line-height: 1;
   font-size: clamp(2.3rem, 7vw, 4rem); color: var(--paper); text-shadow: 3px 3px 0 var(--red), 6px 6px 0 var(--ink);
