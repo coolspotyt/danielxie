@@ -396,3 +396,16 @@ body.effects-off .feature-card .feature-image{clip-path:none!important}
 .xavier-education>.school-heading .eyebrow,.xavier-education .eyebrow{color:#7a1f2b}
 .xavier-education .service-list dt{color:#1f3a6e}
 .xavier-education:hover,.xavier-education:focus-within{background-color:#7a1f2b12;border-color:#7a1f2b}
+
+/* Xavier photographs: full frames, tap to view at full size. */
+.xavier-gallery{display:grid;gap:.75rem;margin-top:1.25rem;padding-top:1.25rem;border-top:1px solid #bda16b45}
+.xavier-photo-row{display:flex;gap:.75rem;align-items:stretch}
+.xavier-photo-row>.xavier-photo{flex:var(--ratio,1) 1 0}
+.xavier-photo-row+.xavier-photo-row{margin-top:.5rem;padding-top:1.25rem;border-top:1px solid #bda16b45}
+.xavier-photo{min-width:0;margin:0;padding:.35rem;border:1px solid #d9b8bb;background:#f5edde}
+.xavier-photo a{display:block}
+.xavier-photo img{display:block;width:100%;height:auto;aspect-ratio:auto;max-height:none;object-fit:contain}
+.labre-item{display:grid;grid-template-columns:minmax(0,1fr) 170px;grid-template-rows:auto 1fr;column-gap:1.25rem;align-items:start}
+.labre-item dt,.labre-item dd:not(.labre-photo){grid-column:1}
+.service-list dd.labre-photo{grid-column:2;grid-row:1/span 2;margin:.2rem 0 .3rem}
+@media(max-width:480px){.labre-item{grid-template-columns:minmax(0,1fr);grid-template-rows:none}.service-list dd.labre-photo{grid-column:1;grid-row:auto;margin-top:.75rem}.xavier-photo-row{flex-direction:column}.xavier-photo-row>.xavier-photo{flex:none}}
