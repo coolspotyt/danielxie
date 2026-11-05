@@ -410,3 +410,10 @@ body.effects-off .feature-card .feature-image{clip-path:none!important}
 .labre-item dt,.labre-item dd:not(.labre-photo){grid-column:1}
 .service-list dd.labre-photo{grid-column:2;grid-row:1/span 2;margin:.2rem 0 .3rem}
 @media(max-width:480px){.labre-item{grid-template-columns:minmax(0,1fr);grid-template-rows:none}.service-list dd.labre-photo{grid-column:1;grid-row:auto;margin-top:.75rem}.xavier-photo-row{flex-direction:column}.xavier-photo-row>.xavier-photo{flex:none}}
+.purdue-life{margin-top:1.5rem;padding-top:1.25rem;border-top:1px solid #cfb99180}
+.purdue-life-row{display:grid;grid-template-columns:1fr 1fr;gap:.75rem;margin-top:.75rem}
+.purdue-life-photo{min-width:0;margin:0;padding:.35rem;border:1px solid #cfb991;background:#f5edde}
+.purdue-life-photo a{display:block}
+.purdue-life-photo img{display:block;width:100%;height:auto}
+.purdue-life-photo figcaption{padding:.5rem .2rem .15rem;font-size:.8125rem;line-height:1.5;color:#8e6f3e}
+@media(max-width:480px){.purdue-life-row{grid-template-columns:1fr}}
