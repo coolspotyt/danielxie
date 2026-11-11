@@ -61,6 +61,12 @@ input {
 }
 .err { width: 100%; min-height: 1.5em; margin: 0; font-size: .9rem; color: #ef9a86; }
 .shake { animation: shake .32s; }
+.book { display: grid; gap: .35rem; max-width: none; justify-content: stretch; text-align: left; }
+.book label { color: inherit; font-size: .85em; }
+.book input, .book textarea { width: 100%; font: inherit; font-size: 16px; padding: .55rem .7rem; border-radius: 6px; border: 2px solid var(--ink); background: var(--paper); color: var(--paper-ink); }
+.book .cta { margin-top: .4rem; cursor: pointer; }
+.book .cta:disabled { opacity: .6; cursor: wait; }
+.book .hp { position: absolute; left: -9999px; width: 1px; height: 1px; opacity: 0; }
 @keyframes shake { 25% { transform: translateX(-7px); } 75% { transform: translateX(7px); } }
 
 .hud {
@@ -197,7 +203,7 @@ button.slot[aria-pressed="true"] { background: var(--red); color: #fff; }
         <text x="60" y="71" id="count">0</text>
       </svg>
       <h1 id="hud-title" tabindex="-1">Daniel's Schedule</h1>
-      <p class="bubble" id="bubble">Pick an open time and send me a request. I'll confirm by email.</p>
+      <p class="bubble" id="bubble">Pick an open time and book it. It lands right on my calendar.</p>
     </div>
     <div class="layout">
       <div class="panel" id="app"></div>
@@ -337,10 +343,49 @@ button.slot[aria-pressed="true"] { background: var(--red); color: #fff; }
       var when = label(day.date, { weekday: "long", month: "long", day: "numeric" }) + " at " + t12(state.pick) + " ET";
       var box = el("section", "request");
       box.appendChild(el("h2", null, when));
-      box.appendChild(el("p", null, "This opens an email to me with the time filled in. Add what you'd like to talk about."));
-      var a = el("a", "cta", "Request this time");
-      a.href = "mailto:" + EMAIL + "?subject=" + encodeURIComponent("Meeting request: " + when) + "&body=" + encodeURIComponent("Hi Daniel,\n\nCould we meet " + when + "?\n\nWhat it's about:\n\nBest way to reach me:\n");
-      box.appendChild(a); app.appendChild(box);
+      box.appendChild(el("p", null, "Drop your info and it goes straight onto my calendar. I'll confirm by email."));
+      var f = el("form", "book"); f.noValidate = true;
+      var field = function (id, text, type, req) {
+        var l = el("label", null, text); l.htmlFor = id;
+        var i = el(type === "area" ? "textarea" : "input"); i.id = id; i.name = id;
+        if (type !== "area") i.type = type;
+        if (req) i.required = true;
+        f.appendChild(l); f.appendChild(i); return i;
+      };
+      var nm = field("b-name", "Your name", "text", true); nm.autocomplete = "name"; nm.maxLength = 80;
+      var em = field("b-email", "Your email", "email", true); em.autocomplete = "email"; em.maxLength = 120;
+      var tp = field("b-topic", "What it's about (optional)", "area"); tp.maxLength = 500; tp.rows = 3;
+      var hp = el("input"); hp.name = "website"; hp.tabIndex = -1; hp.autocomplete = "off"; hp.className = "hp"; hp.setAttribute("aria-hidden", "true"); f.appendChild(hp);
+      var go = el("button", "cta", "Book this time"); go.type = "submit"; f.appendChild(go);
+      var msg = el("p", "err"); msg.setAttribute("role", "alert"); f.appendChild(msg);
+      var mail = el("a", null, "Or email me instead");
+      mail.href = "mailto:" + EMAIL + "?subject=" + encodeURIComponent("Meeting request: " + when);
+      var pickDate = day.date, pickMin = state.pick;
+      f.addEventListener("submit", function (ev) {
+        ev.preventDefault(); msg.textContent = "";
+        if (!nm.value.trim() || !/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(em.value.trim())) { msg.textContent = "Add your name and a real email so I can reach you."; return; }
+        go.disabled = true; go.textContent = "Booking...";
+        fetch(API + "book", { method: "POST", headers: { "content-type": "application/json" },
+          body: JSON.stringify({ date: pickDate, start: pickMin, name: nm.value, email: em.value, topic: tp.value, website: hp.value }) })
+          .then(function (r) { return r.json().catch(function () { return {}; }).then(function (d) { return { status: r.status, d: d }; }); })
+          .then(function (res) {
+            if (res.status === 200) {
+              var dd = state.data.days.filter(function (x) { return x.date === pickDate; })[0];
+              if (dd) dd.busy.push({ start: pickMin, end: pickMin + SLOT, label: "Booked" });
+              state.pick = null; render();
+              var done = el("section", "request");
+              done.appendChild(el("h2", null, "You're on my calendar"));
+              done.appendChild(el("p", null, when + ". I'll confirm by email soon."));
+              app.appendChild(done); return;
+            }
+            go.disabled = false; go.textContent = "Book this time";
+            if (res.status === 409) msg.textContent = "Someone just grabbed that time. Pick another one.";
+            else if (res.status === 400) msg.textContent = "That time or contact info didn't work. Check it and try again.";
+            else { msg.textContent = "Booking isn't working right now. Use the email link below."; }
+          })
+          .catch(function () { go.disabled = false; go.textContent = "Book this time"; msg.textContent = "Booking isn't working right now. Use the email link below."; });
+      });
+      box.appendChild(f); box.appendChild(mail); app.appendChild(box);
     }
   }
 

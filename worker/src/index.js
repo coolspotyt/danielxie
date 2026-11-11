@@ -1,5 +1,6 @@
 // Busy-only schedule endpoint. No titles, locations, or attendees ever leave this file.
 import ICAL from "ical.js";
+import { EmailMessage } from "cloudflare:email";
 
 const ALLOWED_ORIGINS = ["https://danielxie.com", "https://www.danielxie.com"];
 const ZONE = "America/New_York";
@@ -91,6 +92,82 @@ async function sha256(value) {
   return [...new Uint8Array(hash)].map((b) => b.toString(16).padStart(2, "0")).join("");
 }
 
+// ---- Bookings: a picked slot becomes an Outlook invite in Daniel's inbox, which Outlook drops on his calendar. ----
+const clean = (v, max) => String(v == null ? "" : v).replace(/[\u0000-\u001f\u007f]+/g, " ").trim().slice(0, max);
+const icsText = (v) => v.replace(/\\/g, "\\\\").replace(/;/g, "\\;").replace(/,/g, "\\,").replace(/\n/g, "\\n");
+const stamp = (ms) => new Date(ms).toISOString().replace(/[-:]/g, "").replace(/\.\d{3}/, "");
+const EMAIL_RE = /^[^\s@<>"]+@[^\s@<>"]+\.[^\s@<>"]+$/;
+// Find the UTC instant for a New York wall-clock date + minutes (handles daylight saving).
+function utcFor(date, min) {
+  let guess = Date.parse(date + "T00:00:00Z") + min * 60000 + 5 * 3600000;
+  for (let i = 0; i < 3; i++) {
+    const w = wall(guess);
+    const diff = (Date.parse(date + "T00:00:00Z") - Date.parse(w.date + "T00:00:00Z")) / 60000 + (min - w.min);
+    if (!diff) break;
+    guess += diff * 60000;
+  }
+  return guess;
+}
+function fold(line) {
+  const out = []; let rest = line;
+  while (rest.length > 74) { out.push(rest.slice(0, 74)); rest = " " + rest.slice(74); }
+  out.push(rest); return out.join("\r\n");
+}
+function inviteIcs({ uid, startMs, endMs, from, to, name, email, topic }) {
+  const desc = `Booked from danielxie.com/availability\nName: ${name}\nEmail: ${email}\nAbout: ${topic || "(not given)"}`;
+  return [
+    "BEGIN:VCALENDAR", "VERSION:2.0", "PRODID:-//danielxie.com//schedule//EN", "METHOD:REQUEST", "BEGIN:VEVENT",
+    `UID:${uid}`, `DTSTAMP:${stamp(Date.now())}`, `DTSTART:${stamp(startMs)}`, `DTEND:${stamp(endMs)}`,
+    `SUMMARY:${icsText("Meeting with " + name)}`, `DESCRIPTION:${icsText(desc)}`,
+    `ORGANIZER;CN=danielxie.com:mailto:${from}`,
+    `ATTENDEE;CN=Daniel Xie;ROLE=REQ-PARTICIPANT;PARTSTAT=NEEDS-ACTION;RSVP=TRUE:mailto:${to}`,
+    "STATUS:CONFIRMED", "TRANSP:OPAQUE", "SEQUENCE:0",
+    "BEGIN:VALARM", "ACTION:DISPLAY", "DESCRIPTION:Meeting from your schedule page", "TRIGGER:-PT15M", "END:VALARM",
+    "END:VEVENT", "END:VCALENDAR", "",
+  ].map(fold).join("\r\n");
+}
+function mime({ from, to, replyTo, subject, text, ics }) {
+  const b = "b_" + crypto.randomUUID().replace(/-/g, "");
+  const b64 = (str) => btoa(String.fromCharCode(...new TextEncoder().encode(str))).replace(/.{76}/g, "$&\r\n");
+  return [
+    `From: Daniel's schedule <${from}>`, `To: ${to}`, `Reply-To: ${replyTo}`,
+    `Subject: =?UTF-8?B?${b64(subject).replace(/\r\n/g, "")}?=`, `Date: ${new Date().toUTCString()}`,
+    `Message-ID: <${crypto.randomUUID()}@${from.split("@")[1]}>`, "MIME-Version: 1.0",
+    `Content-Type: multipart/alternative; boundary="${b}"`, "",
+    `--${b}`, "Content-Type: text/plain; charset=UTF-8", "Content-Transfer-Encoding: base64", "", b64(text),
+    `--${b}`, 'Content-Type: text/calendar; charset=UTF-8; method=REQUEST', "Content-Transfer-Encoding: base64", "", b64(ics),
+    `--${b}--`, "",
+  ].join("\r\n");
+}
+async function book(request, env, send) {
+  if (!env.SEND_EMAIL || !env.BOOKING_FROM || !env.BOOKING_TO) return send(503, { error: "booking_not_configured" });
+  let body; try { body = await request.json(); } catch { return send(400, { error: "bad_request" }); }
+  if (clean(body.website, 200)) return send(200, { ok: true }); // honeypot: bots fill hidden fields
+  const date = clean(body.date, 10), start = Number(body.start);
+  const name = clean(body.name, 80), email = clean(body.email, 120), topic = clean(body.topic, 500);
+  if (!/^\d{4}-\d{2}-\d{2}$/.test(date) || !Number.isInteger(start) || start % 30 || start < OPEN_MIN || start + 30 > CLOSE_MIN) return send(400, { error: "bad_time" });
+  if (!name || !EMAIL_RE.test(email)) return send(400, { error: "bad_contact" });
+  const startMs = utcFor(date, start), endMs = startMs + 30 * 60000;
+  if (startMs <= Date.now() || startMs > Date.now() + DAYS * 86400000) return send(400, { error: "bad_time" });
+  // Double-check the slot is still open on the real calendar.
+  if (env.CALENDAR_ICS_URL) {
+    try {
+      const r = await fetch(env.CALENDAR_ICS_URL, { headers: { accept: "text/calendar" } });
+      if (r.ok) {
+        const day = busyFromIcs(await r.text(), Date.now()).find((d) => d.date === date);
+        if (day && day.busy.some((b) => b.start < start + 30 && start < b.end)) return send(409, { error: "taken" });
+      }
+    } catch (e) { /* calendar check is best effort; Daniel still sees the request */ }
+  }
+  const when = new Date(startMs).toLocaleString("en-US", { timeZone: ZONE, weekday: "long", month: "long", day: "numeric", hour: "numeric", minute: "2-digit" }) + " ET";
+  const ics = inviteIcs({ uid: crypto.randomUUID() + "@danielxie.com", startMs, endMs, from: env.BOOKING_FROM, to: env.BOOKING_TO, name, email, topic });
+  const text = `New booking from your schedule page.\n\nWhen: ${when} (30 min)\nName: ${name}\nEmail: ${email}\nAbout: ${topic || "(not given)"}\n\nReply to this email to reach them.`;
+  try {
+    await env.SEND_EMAIL.send(new EmailMessage(env.BOOKING_FROM, env.BOOKING_TO, mime({ from: env.BOOKING_FROM, to: env.BOOKING_TO, replyTo: email, subject: `Booking: ${name}, ${when}`, text, ics })));
+  } catch (e) { return send(502, { error: "send_failed" }); }
+  return send(200, { ok: true, when });
+}
+
 export default {
   async fetch(request, env) {
     const origin = request.headers.get("origin") || "";
@@ -100,7 +177,11 @@ export default {
     const send = (status, body) => new Response(JSON.stringify(body), { status, headers });
 
     if (request.method === "OPTIONS") {
-      return new Response(null, { status: 204, headers: { ...headers, "access-control-allow-methods": "GET", "access-control-allow-headers": "x-passcode", "access-control-max-age": "86400" } });
+      return new Response(null, { status: 204, headers: { ...headers, "access-control-allow-methods": "GET, POST", "access-control-allow-headers": "x-passcode, content-type", "access-control-max-age": "86400" } });
+    }
+    if (request.method === "POST" && new URL(request.url).pathname === "/book") {
+      if (!allowed) return send(403, { error: "forbidden" });
+      return book(request, env, send);
     }
     if (request.method !== "GET") return send(405, { error: "method_not_allowed" });
 

@@ -4,3 +4,13 @@ compatibility_date = "2026-10-01"
 workers_dev = true
 
 # Set CALENDAR_ICS_URL as a secret in the Cloudflare dashboard. SCHEDULE_PASSCODE optionally replaces the Studio passcode.
+
+# Bookings: Cloudflare Email Routing sends each booking to Daniel's Outlook as a calendar invite.
+# BOOKING_TO must be a verified destination address in Email Routing; BOOKING_FROM must be on a domain with Email Routing on.
+[vars]
+BOOKING_TO = "xie582@purdue.edu"
+BOOKING_FROM = "schedule@danielxie.com"
+
+[[send_email]]
+name = "SEND_EMAIL"
+destination_address = "xie582@purdue.edu"
